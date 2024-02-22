@@ -220,7 +220,7 @@ def run5():
         print(output_path)
 
 
-def run7(filename):
+def run8(filename):
     # 创建输出文件夹
     output_folder = 'thanks'
     if not os.path.exists(output_folder):
@@ -264,7 +264,37 @@ def run7(filename):
     new_image_bg3.save(os.path.join(output_folder_1, new_filename))
 
 
+def run0():
+    # 定义输入和输出文件夹路径
+    input_folder = "webp"
+    output_folder = "1"
+
+    # 确保输出文件夹存在，如果不存在则创建
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # 遍历输入文件夹中的所有文件
+    for filename in os.listdir(input_folder):
+        if filename.endswith(".webp"):
+            # 拼接输入文件路径
+            input_filepath = os.path.join(input_folder, filename)
+
+            # 生成输出文件路径，将后缀改为.png
+            output_filepath = os.path.join(output_folder, os.path.splitext(filename)[0] + ".png")
+
+            # 打开webp文件并转换为png格式
+            img = Image.open(input_filepath).convert("RGB")
+
+            # 保存为png格式
+            img.save(output_filepath, "PNG")
+
+    print("转换完成！")
+
+
 if __name__ == "__main__":
+
+    run0()
+
     files = os.listdir(in_image_path)
     print(files)
     for file in files:
@@ -274,6 +304,6 @@ if __name__ == "__main__":
         run3(file)
         run6(file)
         run7(file)
-        run7(file)
+        run8(file)
     run4()
     run5()
