@@ -8,6 +8,8 @@ in_image_path = './1/'
 out_1_image_path = './out_1/'
 out_2_image_path = './out_2/'
 out_3_image_path = './out_3/'
+out_5_image_path = './out_5/'
+out_6_image_path = './out_6/'
 
 
 def run(name):
@@ -101,6 +103,166 @@ def run3(name):
             resized_img.save(output_path)
             print(output_path)
 
+def run4():
+    # 打开四张图片
+    background = Image.open("cover/background.png").convert("RGBA")
+    image1 = Image.open("cover/mid.png").convert("RGBA")
+    image2 = Image.open("cover/left.png").convert("RGBA")
+    image3 = Image.open("cover/right.png").convert("RGBA")
+
+    output_folder = "out_4"
+    os.makedirs(output_folder, exist_ok=True)
+
+    # 获取背景图片的尺寸
+    bg_width, bg_height = background.size
+
+    # 缩小图片
+    resize_factor_image1 = 0.625
+    resize_factor_image2 = 0.525
+    resize_factor_image3 = 0.525
+
+    image1 = image1.resize((int(image1.width * resize_factor_image1), int(image1.height * resize_factor_image1)))
+    image2 = image2.resize((int(image2.width * resize_factor_image2), int(image2.height * resize_factor_image2)))
+    image3 = image3.resize((int(image3.width * resize_factor_image3), int(image3.height * resize_factor_image3)))
+
+    # 获取前景图片的尺寸
+    image1_width, image1_height = image1.size
+    image2_width, image2_height = image2.size
+    image3_width, image3_height = image3.size
+
+    # 计算前景图片的位置
+    x_offset_image1 = (bg_width - image1_width) // 2
+    y_offset_image1 = (bg_height - image1_height) * 3 // 4
+
+    x_offset_image2 = 0
+    y_offset_image2 = (bg_height - image2_height) * 3 // 4
+
+    x_offset_image3 = bg_width - image3_width
+    y_offset_image3 = (bg_height - image3_height) * 3 // 4
+
+    # 创建每张图的 mask
+    mask_image1 = image1.split()[3]  # 获取 alpha 通道
+    mask_image2 = image2.split()[3]
+    mask_image3 = image3.split()[3]
+
+    # 将前景图片叠加到背景图片上，并使用 mask
+    background.paste(image1, (x_offset_image1, y_offset_image1), mask=mask_image1)
+    background.paste(image2, (x_offset_image2, y_offset_image2), mask=mask_image2)
+    background.paste(image3, (x_offset_image3, y_offset_image3), mask=mask_image3)
+
+    # 保存结果
+    output_path = os.path.join(output_folder, "cover.png")
+    background.save(output_path)
+
+    print("图片已保存到:", output_path)
+
+def run6(name):
+    image_path = out_1_image_path + name
+    output_path = out_5_image_path + name
+    target_size = 240
+
+    if name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        # 打开并调整图片大小
+        with Image.open(image_path) as img:
+            img = img.convert("RGBA")  # 确保图片为RGBA格式，以处理透明度
+            # 计算新尺寸
+            ratio = target_size / max(img.size)
+            new_size = (int(img.size[0] * ratio), int(img.size[1] * ratio))
+            resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+            # 保存到输出目录
+            resized_img.save(output_path)
+            print(output_path)
+
+def run7(name):
+    image_path = out_1_image_path + name
+    output_path = out_6_image_path + name
+    target_size = 50
+
+    if name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        # 打开并调整图片大小
+        with Image.open(image_path) as img:
+            img = img.convert("RGBA")  # 确保图片为RGBA格式，以处理透明度
+            # 计算新尺寸
+            ratio = target_size / max(img.size)
+            new_size = (int(img.size[0] * ratio), int(img.size[1] * ratio))
+            resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+            # 保存到输出目录
+            resized_img.save(output_path)
+            print(output_path)
+
+def run5():
+    image_path = './out_4/cover.png'
+    output_path = './out_4/cover_out.png'
+    target_size = 750
+
+    # 打开并调整图片大小
+    with Image.open(image_path) as img:
+        img = img.convert("RGBA")  # 确保图片为RGBA格式，以处理透明度
+        # 计算新尺寸
+        ratio = target_size / max(img.size)
+        new_size = (int(img.size[0] * ratio), int(img.size[1] * ratio))
+        resized_img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+        width, height = resized_img.size
+
+        # 定义截取区域的坐标
+        left = 0
+        top = height - 400
+        right = width
+        bottom = height
+
+        cropped_image = resized_img.crop((left, top, right, bottom))
+
+        # 保存到输出目录
+        cropped_image.save(output_path)
+        print(output_path)
+
+
+def run7(filename):
+    # 创建输出文件夹
+    output_folder = 'thanks'
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    output_folder_1 = 'thanks_1'
+    if not os.path.exists(output_folder_1):
+        os.makedirs(output_folder_1)
+
+    # 打开背景图
+    background_2 = Image.open('cover/background_2.png')
+    background_3 = Image.open('cover/background_3.png')
+
+    # 读取 out_2 文件夹中的每一张图片
+    out_folder = 'out_2'
+    # 打开图片
+    image = Image.open(os.path.join(out_folder, filename))
+
+    # 调整图片大小
+    max_width = 500
+    width_percent = max_width / float(image.size[0])
+    new_height = int(float(image.size[1]) * float(width_percent))
+    image = image.resize((max_width, new_height), Image.Resampling.LANCZOS)
+
+    # 创建新图像
+    new_image_bg2 = background_2.copy()
+    new_image_bg3 = background_3.copy()
+
+    # 将图片粘贴到背景图上
+    offset = ((new_image_bg2.width - image.width) // 2, (new_image_bg2.height - image.height) // 2)
+    new_image_bg2.paste(image, offset, image)
+
+    offset = ((new_image_bg3.width - image.width) // 2, (new_image_bg3.height - image.height) // 2)
+    new_image_bg3.paste(image, offset, image)
+
+    # 保存合成后的图像到输出文件夹
+    new_filename = os.path.splitext(filename)[0] + '_background_2.png'
+    new_image_bg2.save(os.path.join(output_folder, new_filename))
+
+    new_filename = os.path.splitext(filename)[0] + '_background_3.png'
+    new_image_bg3.save(os.path.join(output_folder_1, new_filename))
+
 
 if __name__ == "__main__":
     files = os.listdir(in_image_path)
@@ -110,3 +272,8 @@ if __name__ == "__main__":
         run(file)
         run2(file)
         run3(file)
+        run6(file)
+        run7(file)
+        run7(file)
+    run4()
+    run5()
