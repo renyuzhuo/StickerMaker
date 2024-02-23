@@ -1,4 +1,6 @@
 import os
+import time
+from concurrent.futures import ProcessPoolExecutor
 
 import cv2
 import numpy as np
@@ -10,6 +12,13 @@ out_2_image_path = './out_2/'
 out_3_image_path = './out_3/'
 out_5_image_path = './out_5/'
 out_6_image_path = './out_6/'
+out_7_image_path = './out_7/'
+out_8_image_path = './out_8/'
+
+if not os.path.exists(out_7_image_path):
+    os.makedirs(out_7_image_path)
+if not os.path.exists(out_8_image_path):
+    os.makedirs(out_8_image_path)
 
 
 def run(name):
@@ -101,7 +110,7 @@ def run3(name):
 
             # 保存到输出目录
             resized_img.save(output_path)
-            print(output_path)
+
 
 def run4():
     # 打开四张图片
@@ -154,7 +163,6 @@ def run4():
     output_path = os.path.join(output_folder, "cover.png")
     background.save(output_path)
 
-    print("图片已保存到:", output_path)
 
 def run6(name):
     image_path = out_1_image_path + name
@@ -172,7 +180,7 @@ def run6(name):
 
             # 保存到输出目录
             resized_img.save(output_path)
-            print(output_path)
+
 
 def run7(name):
     image_path = out_1_image_path + name
@@ -190,7 +198,7 @@ def run7(name):
 
             # 保存到输出目录
             resized_img.save(output_path)
-            print(output_path)
+
 
 def run5():
     image_path = './out_4/cover.png'
@@ -217,7 +225,6 @@ def run5():
 
         # 保存到输出目录
         cropped_image.save(output_path)
-        print(output_path)
 
 
 def run8(filename):
@@ -288,22 +295,83 @@ def run0():
             # 保存为png格式
             img.save(output_filepath, "PNG")
 
-    print("转换完成！")
+
+def crop_to_square_and_add_transparency(img, is_all):
+    """Crop the image to a square by keeping transparency, adding a 2-pixel margin to the sides, and 2 pixels of transparency at the bottom."""
+    # Convert image to numpy array to find the non-transparent content
+    img_array = np.array(img)
+
+    # Find the bounds of the non-transparent content
+    alpha = img_array[:, :, 3]
+    rows = np.any(alpha > 0, axis=1)
+    cols = np.any(alpha > 0, axis=0)
+    top, bottom = np.where(rows)[0][[0, -1]]
+    left, right = np.where(cols)[0][[0, -1]]
+
+    # Calculate the desired size for the square, considering the margins
+    if is_all:
+        desired_size = max(right - left + 2 * 2, bottom - top + 2)  # 2 pixels margin for left and right, 2 pixels for bottom transparency
+    else:
+        desired_size = right - left + 2 * 2
+
+    # Determine new left and top coordinates to center the content
+    new_left = max(left - (desired_size - (right - left)) // 2, 0)
+    new_top = max(top, 0)  # Keep the top as is to start from the top content
+
+    # Ensure new dimensions do not exceed original image's dimensions
+    if new_left + desired_size > img.width:
+        new_left = img.width - desired_size
+    if new_top + desired_size > img.height:
+        new_top = img.height - desired_size
+
+    # Adjust for bottom transparency by reducing the height by 2 pixels before cropping
+    adjusted_height = desired_size - 2 if desired_size <= img.height else img.height - 2
+
+    # Crop the image with the new bounds
+    cropped_img = img.crop((new_left, new_top, new_left + desired_size, new_top + adjusted_height))
+
+    # Create a new image with the desired size, including the transparency at the bottom
+    final_img = Image.new("RGBA", (desired_size, desired_size), (255, 255, 255, 0))
+    final_img.paste(cropped_img, (0, 0))
+
+    return final_img
+
+
+def run9(name):
+    img_path = os.path.join(out_1_image_path, name)
+    img = Image.open(img_path).convert("RGBA")  # Ensure image is in RGBA format
+    final_img = crop_to_square_and_add_transparency(img, True)
+    output_path = os.path.join(out_7_image_path, name)
+    final_img.save(output_path, "PNG")
+
+    final_img = crop_to_square_and_add_transparency(img, False)
+    output_path = os.path.join(out_8_image_path, name)
+    final_img.save(output_path, "PNG")
+
+
+def process_image(file):
+    print(file)
+    run(file)
+    run2(file)
+    run3(file)
+    run6(file)
+    run7(file)
+    run8(file)
+    run9(file)
 
 
 if __name__ == "__main__":
+    start_time = time.time()  # 记录开始时间
 
     run0()
 
     files = os.listdir(in_image_path)
-    print(files)
-    for file in files:
-        print(file)
-        run(file)
-        run2(file)
-        run3(file)
-        run6(file)
-        run7(file)
-        run8(file)
+
+    with ProcessPoolExecutor() as executor:
+        executor.map(process_image, files)
     run4()
     run5()
+
+    end_time = time.time()  # 记录结束时间
+    total_time = end_time - start_time  # 计算总耗时
+    print(f"All processing completed in {total_time} seconds.")
